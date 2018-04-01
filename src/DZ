@@ -1,0 +1,220 @@
+SELECT *
+FROM department
+ORDER BY CountOfWorkers /*ASC*/ DESC ;
+# # # # # # # # # # # # # # # # # #
+## # # # # # # #  task ## # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # #
+SELECT FirstName
+FROM client
+WHERE LENGTH(FirstName)<6
+;
+SELECT DepartmentCity
+FROM department
+WHERE DepartmentCity LIKE 'Lviv';
+
+SELECT FirstName, LastName AS name,Education
+FROM client
+WHERE Education LIKE 'high'
+ORDER BY name;
+
+SELECT *
+FROM client
+ORDER BY idClient DESC
+LIMIT 5,5
+;
+
+SELECT FirstName, LastName
+FROM client
+WHERE LastName LIKE '%iv' OR '%niv'
+;
+
+SELECT client.FirstName, DepartmentCity
+FROM client
+JOIN department d ON client.Department_idDepartment = d.idDepartment
+JOIN client c ON d.idDepartment = c.Department_idDepartment
+  WHERE d.DepartmentCity LIKE '%yiv'
+GROUP BY c.FirstName
+;
+SELECT FirstName, Passport
+  FROM client
+GROUP BY FirstName
+;
+
+SELECT client.FirstName, a.Sum
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+WHERE a.Sum > 5000
+;
+SELECT DepartmentCity, count(DepartmentCity) AS count
+FROM client
+JOIN department d ON client.Department_idDepartment = d.idDepartment
+WHERE d.DepartmentCity LIKE 'lv%'
+;
+SELECT FirstName, max(Sum)
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+GROUP BY FirstName
+;
+SELECT FirstName, count(CreditState)
+FROM client
+JOIN department d ON client.Department_idDepartment = d.idDepartment
+JOIN application a ON client.idClient = a.Client_idClient
+GROUP BY FirstName
+;
+SELECT FirstName, max(Sum), min(Sum)
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+GROUP BY FirstName
+;
+SELECT FirstName, count(CreditState)
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+WHERE Education LIKE 'hig%'
+GROUP BY FirstName
+;
+
+SELECT FirstName, avg(Sum) AS av
+FROM client
+  JOIN application a ON client.idClient = a.Client_idClient
+GROUP BY idApplication
+ORDER BY av DESC
+LIMIT 1
+;
+
+SELECT idDepartment,DepartmentCity,sum(Sum)
+FROM department
+JOIN client c ON department.idDepartment = c.Department_idDepartment
+JOIN application a ON c.idClient = a.Client_idClient
+GROUP BY idDepartment
+LIMIT 1
+;
+SELECT idDepartment, DepartmentCity, max(Sum)
+FROM department
+JOIN client c ON department.idDepartment = c.Department_idDepartment
+JOIN application a ON c.idClient = a.Client_idClient
+;
+
+SELECT @edu := Education AS education
+FROM client
+;
+
+UPDATE application
+    JOIN client c ON application.Client_idClient = c.idClient
+SET Sum = 6000
+WHERE Education LIKE 'high'
+;
+UPDATE client
+JOIN department d ON client.Department_idDepartment = d.idDepartment
+    SET City = 'Kyiv'
+WHERE DepartmentCity LIKE 'Ky%'
+;
+DELETE FROM application
+WHERE CreditState LIKE 'Returned'
+;
+DELETE FROM application
+WHERE (SELECT FirstName FROM client WHERE left(FirstName, 2) = 'u');
+
+SELECT DepartmentCity, Sum
+FROM department
+JOIN client c ON department.idDepartment = c.Department_idDepartment
+JOIN application a ON c.idClient = a.Client_idClient
+WHERE department.DepartmentCity LIKE 'lv%' AND a.Sum>5000
+;
+
+INSERT INTO bank.application (idApplication, Sum, CreditState, Currency, Client_idClient) VALUES ('3', '7500', 'Returned', 'Euro', '6');
+INSERT INTO bank.application (idApplication, Sum, CreditState, Currency, Client_idClient) VALUES ('5', '3700', 'Returned', 'Gryvnia', '3');
+INSERT INTO bank.application (idApplication, Sum, CreditState, Currency, Client_idClient) VALUES ('6', '4100', 'Returned', 'Dollar', '1');
+SELECT FirstName, LastName, Sum
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+WHERE a.CreditState LIKE 'Returned' AND Sum> 5000
+;
+SELECT FirstName, max(Sum)
+FROM client
+  JOIN application a ON client.idClient = a.Client_idClient
+ WHERE a.CreditState LIKE 'not%'
+;
+SELECT FirstName, min(Sum)
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+;
+SELECT FirstName, Sum
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+WHERE avg(Sum)
+GROUP BY Sum
+;
+SELECT FirstName, City
+FROM client
+JOIN application a ON client.idClient = a.Client_idClient
+WHERE @maxcredit AND Client_idClient
+GROUP BY idClient
+;
+SELECT @maxcredit := sum(Sum)
+FROM application;
+
+
+
+
+INSERT INTO bank.application (idApplication, Sum, CreditState, Currency, Client_idClient) VALUES ('1', '4000', 'Returned', 'Dollar', '1');
+# # # # # # # # # # # # # # # # # #
+# SELECT sum(CountOfWorkers)
+# SELECT  max(CountOfWorkers)
+# SELECT min(CountOfWorkers)
+SELECT count(CountOfWorkers)
+FROM department;
+
+SELECT avg(Age)
+FROM client;
+
+SELECT  @averageAge := avg(Age) AS age
+  FROM client
+;
+
+SELECT @averageAge;
+
+SELECT *
+FROM client WHERE Age>@averageAge;
+
+
+SELECT *
+FROM client WHERE Age>
+                  (SELECT avg(Age)
+                  FROM client);
+
+SELECT FirstName, count(idClient), max(Sum), min(Sum), sum(Sum), avg(Sum) AS av
+
+FROM client
+JOIN department d ON client.Department_idDepartment = d.idDepartment
+JOIN application a ON client.idClient = a.Client_idClient
+  WHERE a.CreditState LIKE 'not%'
+GROUP BY Client_idClient
+ORDER BY av
+
+;
+
+CREATE UNIQUE INDEX surnameIndex ON client(LastName);
+
+DELIMITER //
+CREATE PROCEDURE selectALL (IN name_1 VARCHAR(255))
+  BEGIN
+    DECLARE a VARCHAR(255);
+    SET a = name_1;
+    SELECT *
+      FROM client
+        WHERE LastName = a;
+
+  END //
+
+DELIMITER ;
+
+CALL selectALL('Pehnyk');
+
+START TRANSACTION ;
+
+INSERT INTO department (idDepartment, DepartmentCity, CountOfWorkers)
+VALUES
+  (11, 'sun francisko', 1),
+  (12, 'los santos');
+
+COMMIT;
